@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "midnight-munchies-adc86",
+    "production": "midnight-munchies-adc86"
+  },
+  "targets": {},
+  "etags": {}
+}

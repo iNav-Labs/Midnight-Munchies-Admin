@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "44734305698",
+    "project_id": "midnight-munchies-adc86",
+    "storage_bucket": "midnight-munchies-adc86.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44734305698:android:9c7efa7bb2dc30ebc60efb",
+        "android_client_info": {
+          "package_name": "com.example.admin_side"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6zlSf634D6toAGmzAFdQZ52DaRbgtpp8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
