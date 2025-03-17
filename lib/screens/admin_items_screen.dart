@@ -18,6 +18,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _hindiNameController = TextEditingController();
   String? _imageUrl;
   Uint8List? _imageBytes;
   final List<Map<String, dynamic>> _items = [];
@@ -45,6 +46,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           _items.add({
             'id': doc.id,
             'name': data['name'],
+            'hindiName': data['hindiName'] ?? '',
             'price': data['price'],
             'image': data['imageUrl'],
           });
@@ -119,6 +121,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           // Add to Firestore
           await _firestore.collection('items').add({
             'name': _nameController.text,
+            'hindiName': _hindiNameController.text,
             'price': _priceController.text,
             'imageUrl': downloadUrl,
             'createdAt': FieldValue.serverTimestamp(),
@@ -127,6 +130,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           // Clear form
           _nameController.clear();
           _priceController.clear();
+          _hindiNameController.clear();
           setState(() {
             _imageUrl = null;
             _imageBytes = null;
@@ -147,7 +151,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
-
             content: Text('Please select an image and fill all fields'),
           ),
         );
@@ -195,6 +198,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     final String itemId = _items[index]['id'];
     _nameController.text = _items[index]['name'];
     _priceController.text = _items[index]['price'];
+    _hindiNameController.text = _items[index]['hindiName'] ?? '';
 
     final BuildContext parentContext = context;
 
@@ -210,6 +214,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildTextField(_nameController, "Food Name"),
+                const SizedBox(height: 12),
+                _buildTextField(_hindiNameController, "Hindi Name"),
                 const SizedBox(height: 12),
                 _buildTextField(
                   _priceController,
@@ -233,6 +239,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                         double.parse(_priceController.text) > 0) {
                       await _firestore.collection('items').doc(itemId).update({
                         'name': _nameController.text,
+                        'hindiName': _hindiNameController.text,
                         'price': _priceController.text,
                         'updatedAt': FieldValue.serverTimestamp(),
                       });
@@ -322,6 +329,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
                             ),
                             const SizedBox(height: 16),
                             _buildTextField(_nameController, "Food Name"),
+                            const SizedBox(height: 16),
+                            _buildTextField(_hindiNameController, "Hindi Name"),
                             const SizedBox(height: 16),
                             _buildTextField(
                               _priceController,

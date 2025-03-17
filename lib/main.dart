@@ -1,39 +1,4 @@
-// import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
-// import 'package:admin_side/screens/admin_auth_screen.dart';
-// import 'package:admin_side/screens/admin_home_screen.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
-
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       initialRoute: '/login',
-//       routes: {
-//         '/login':
-//             (context) => AuthScreen(
-//               onRegistrationComplete: () {
-//                 Navigator.pushReplacementNamed(context, '/home');
-//               },
-//             ),
-//         '/home': (context) => const HomeScreen(),
-//       },
-//     );
-//   }
-// }
-
-// // vfasdvadfvadfbvsdfbdgabgbadgmblksgjlk13245gte!$1@#@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,7 +8,9 @@ import 'package:admin_side/screens/admin_auth_screen.dart';
 import 'package:admin_side/screens/admin_home_screen.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling background notification: ${message.messageId}");
+  if (kDebugMode) {
+    print("Handling background notification: ${message.messageId}");
+  }
 }
 
 void main() async {
@@ -68,9 +35,12 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _requestNotificationPermissions();
-    _getFCMToken();
-    _listenForNotifications();
+    // Only initialize notifications on Android (not web)
+    if (!kIsWeb) {
+      _requestNotificationPermissions();
+      _getFCMToken();
+      _listenForNotifications();
+    }
   }
 
   void _requestNotificationPermissions() async {
@@ -81,7 +51,9 @@ class _MyAppState extends State<MyApp> {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print("Notification permission granted!");
+      if (kDebugMode) {
+        print("Notification permission granted!");
+      }
     }
   }
 
@@ -97,13 +69,16 @@ class _MyAppState extends State<MyApp> {
 
   void _listenForNotifications() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("New notification received: ${message.notification?.title}");
+      if (kDebugMode) {
+        print("New notification received: ${message.notification?.title}");
+      }
 
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text(message.notification?.title ?? "New Notification"),
+            title: Text(message.notification?.title ?? "New Order"),
             content: Text(
               message.notification?.body ?? "You have received an order.",
             ),
@@ -119,7 +94,9 @@ class _MyAppState extends State<MyApp> {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Notification clicked: ${message.notification?.title}");
+      if (kDebugMode) {
+        print("Notification clicked: ${message.notification?.title}");
+      }
     });
   }
 

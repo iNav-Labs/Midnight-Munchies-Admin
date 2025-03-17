@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -225,6 +228,29 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+
+        // Get the current user
+        User? user = _auth.currentUser;
+        if (user != null) {
+          // Get FCM token and update user document
+          try {
+            final fcmToken = await FirebaseMessaging.instance.getToken();
+            if (fcmToken != null) {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .set({
+                    'fcmToken': fcmToken,
+                    'lastLogin': FieldValue.serverTimestamp(),
+                  }, SetOptions(merge: true));
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('Failed to update FCM token: $e');
+            }
+            // Continue with login process regardless of token update status
+          }
+        }
 
         // Save credentials after successful login
         final prefs = await SharedPreferences.getInstance();

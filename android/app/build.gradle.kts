@@ -10,12 +10,13 @@ plugins {
 
 android {
     namespace = "com.example.admin_side"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -44,4 +45,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+
+dependencies {
+    // ✅ Add Core Library Desugaring Dependency
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }

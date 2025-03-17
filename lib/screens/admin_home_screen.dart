@@ -9,6 +9,7 @@ import 'package:admin_side/screens/admin_daily_sales_screen.dart';
 import 'package:admin_side/widgets/admin_upper_navbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+// ignore: library_prefixes
 import 'package:url_launcher/url_launcher.dart' as urlLauncher;
 
 class HomeScreen extends StatefulWidget {
@@ -160,9 +161,154 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
+                onTap: () {
+                  // Show order details in a dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text(
+                          "Order Details",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Customer: ${orders[index]["name"]}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Hostel: ${orders[index]["hostel"]}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF6552FF),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Phone: ${orders[index]["phone"] ?? "Not provided"}",
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "Items:",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...orders[index]["items"].map<Widget>((item) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          item["name"],
+                                          style: const TextStyle(fontSize: 15),
+                                        ),
+                                      ),
+                                      Text(
+                                        "x${item["count"]}",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+
+                              const Divider(),
+                              const Text(
+                                "Items in Hindi:",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              ...orders[index]["items"].map<Widget>((item) {
+                                // Debug print to see the entire item object
+                                if (kDebugMode) {
+                                  print("Full item: $item");
+                                }
+
+                                // Check if hindiName exists and is not empty
+                                final hindiName = item["hindiName"];
+                                if (hindiName == null ||
+                                    hindiName.toString().isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          hindiName.toString(),
+                                          style: const TextStyle(fontSize: 15),
+                                        ),
+                                      ),
+                                      Text(
+                                        "x${item["count"]}",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text("Close"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              isCooking
+                                  ? _moveToDelivery(orders[index]["id"])
+                                  : _markAsDelivered(orders[index]["id"]);
+                              Navigator.of(context).pop();
+                            },
+                            child: Text(
+                              isCooking
+                                  ? "Move to Delivery"
+                                  : "Mark as Delivered",
+                              style: TextStyle(
+                                color: isCooking ? Colors.orange : Colors.green,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: const Color(0xFF6552FF).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
@@ -227,6 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (await urlLauncher.canLaunchUrl(phoneUri)) {
                               await urlLauncher.launchUrl(phoneUri);
                             } else {
+                              // ignore: use_build_context_synchronously
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
@@ -465,8 +612,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   offset: const Offset(0, -10),
                                   scrollbarTheme: ScrollbarThemeData(
                                     radius: const Radius.circular(40),
-                                    thickness: MaterialStateProperty.all(6),
-                                    thumbVisibility: MaterialStateProperty.all(
+                                    thickness: WidgetStateProperty.all(6),
+                                    thumbVisibility: WidgetStateProperty.all(
                                       true,
                                     ),
                                   ),
@@ -482,6 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       decoration: BoxDecoration(
                                         color: Color(
                                           0xFF6552FF,
+                                          // ignore: deprecated_member_use
                                         ).withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),

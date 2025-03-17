@@ -97,6 +97,7 @@ class _DailySalesScreenState extends State<DailySalesScreen> {
         _isLoading = false;
       });
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading sales: $e')));
     }
@@ -154,6 +155,7 @@ class _DailySalesScreenState extends State<DailySalesScreen> {
     ).format(DateTime.parse(date));
     double totalRevenue = sales.fold(
       0.0,
+      // ignore: avoid_types_as_parameter_names
       (sum, item) => sum + (item['price'] as double),
     );
 
@@ -169,6 +171,7 @@ class _DailySalesScreenState extends State<DailySalesScreen> {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
+                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 5,
                 spreadRadius: 1,
