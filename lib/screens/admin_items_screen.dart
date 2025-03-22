@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,8 +19,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _hindiNameController = TextEditingController();
   String? _imageUrl;
   Uint8List? _imageBytes;
+  String? _selectedCategories;
   final List<Map<String, dynamic>> _items = [];
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -27,11 +30,30 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final Uuid _uuid = const Uuid();
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+  List<String> categories = [];
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    _fetchcategories();
+  }
+
+  Future<void> _fetchcategories() async {
+    try {
+      final hostelDoc =
+          await _firestore.collection('settings').doc('shop_status').get();
+      final List<dynamic> categoriesList =
+          hostelDoc.data()?['categories'] ?? ["A", "B", "C", "D"];
+      setState(() {
+        categories = List<String>.from(categoriesList);
+      });
+    } catch (e) {
+      debugPrint('Error fetching hostels: $e');
+      setState(() {
+        categories = ["A", "B", "C", "D"]; // Fallback to default hostels
+      });
+    }
   }
 
   Future<void> _loadItems() async {
@@ -45,6 +67,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           _items.add({
             'id': doc.id,
             'name': data['name'],
+            'hindiName': data['hindiName'] ?? '',
             'price': data['price'],
             'image': data['imageUrl'],
           });
@@ -119,14 +142,17 @@ class _ItemsScreenState extends State<ItemsScreen> {
           // Add to Firestore
           await _firestore.collection('items').add({
             'name': _nameController.text,
+            'hindiName': _hindiNameController.text,
             'price': _priceController.text,
             'imageUrl': downloadUrl,
+            'category': _selectedCategories,
             'createdAt': FieldValue.serverTimestamp(),
           });
 
           // Clear form
           _nameController.clear();
           _priceController.clear();
+          _hindiNameController.clear();
           setState(() {
             _imageUrl = null;
             _imageBytes = null;
@@ -147,7 +173,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
-
             content: Text('Please select an image and fill all fields'),
           ),
         );
@@ -195,6 +220,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     final String itemId = _items[index]['id'];
     _nameController.text = _items[index]['name'];
     _priceController.text = _items[index]['price'];
+    _hindiNameController.text = _items[index]['hindiName'] ?? '';
 
     final BuildContext parentContext = context;
 
@@ -210,6 +236,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildTextField(_nameController, "Food Name"),
+                const SizedBox(height: 12),
+                _buildTextField(_hindiNameController, "Hindi Name"),
                 const SizedBox(height: 12),
                 _buildTextField(
                   _priceController,
@@ -233,6 +261,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                         double.parse(_priceController.text) > 0) {
                       await _firestore.collection('items').doc(itemId).update({
                         'name': _nameController.text,
+                        'hindiName': _hindiNameController.text,
                         'price': _priceController.text,
                         'updatedAt': FieldValue.serverTimestamp(),
                       });
@@ -323,10 +352,155 @@ class _ItemsScreenState extends State<ItemsScreen> {
                             const SizedBox(height: 16),
                             _buildTextField(_nameController, "Food Name"),
                             const SizedBox(height: 16),
+                            _buildTextField(_hindiNameController, "Hindi Name"),
+                            const SizedBox(height: 16),
                             _buildTextField(
                               _priceController,
                               "Price",
                               keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 0,
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton2<String>(
+                                    isExpanded: true,
+                                    hint: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.apartment_rounded,
+                                          size: 24,
+                                          color: Color(0xFF6552FF),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'Select Categories',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    items:
+                                        categories.map((String hostel) {
+                                          return DropdownMenuItem<String>(
+                                            value: hostel,
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.apartment_rounded,
+                                                  color: Color(0xFF6552FF),
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  hostel,
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 14,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                    value: _selectedCategories,
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        _selectedCategories = newValue;
+                                      });
+                                    },
+                                    buttonStyleData: ButtonStyleData(
+                                      height: 50,
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.only(
+                                        left: 14,
+                                        right: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    iconStyleData: IconStyleData(
+                                      icon: Icon(
+                                        Icons.arrow_drop_down_rounded,
+                                        color: Color(0xFF6552FF),
+                                        size: 30,
+                                      ),
+                                      iconEnabledColor: Color(0xFF6552FF),
+                                    ),
+                                    dropdownStyleData: DropdownStyleData(
+                                      maxHeight: 300,
+                                      width:
+                                          MediaQuery.of(context).size.width -
+                                          40,
+                                      padding: null,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      offset: const Offset(0, -10),
+                                      scrollbarTheme: ScrollbarThemeData(
+                                        radius: const Radius.circular(40),
+                                        thickness: WidgetStateProperty.all(6),
+                                        thumbVisibility:
+                                            WidgetStateProperty.all(true),
+                                      ),
+                                    ),
+                                    menuItemStyleData: MenuItemStyleData(
+                                      height: 50,
+                                      padding: const EdgeInsets.only(
+                                        left: 14,
+                                        right: 14,
+                                      ),
+                                      selectedMenuItemBuilder: (
+                                        context,
+                                        child,
+                                      ) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            color: Color(
+                                              0xFF6552FF,
+                                              // ignore: deprecated_member_use
+                                            ).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 16),
                             _buildImageUploadSection(),
